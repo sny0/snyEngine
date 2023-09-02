@@ -1,0 +1,16 @@
+﻿  Application.cpp
+D:\GitHub\snyEngine\snyEngine\Application.h(34,8): error C2143: 構文エラー: ';' が '<' の前にありません。
+D:\GitHub\snyEngine\snyEngine\Application.h(34,8): error C4430: 型指定子がありません - int と仮定しました。メモ: C++ は int を既定値としてサポートしていません
+D:\GitHub\snyEngine\snyEngine\Application.h(34,38): error C2238: ';' の前に無効なトークンがあります。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(188,2): error C2065: '_backBuffers': 定義されていない識別子です。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(198,56): error C2065: '_backBuffers': 定義されていない識別子です。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(198,56): error C2672: 'IID_PPV_ARGS_Helper': 一致するオーバーロードされた関数が見つかりませんでした。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(198,86): error C2660: 'IDXGISwapChain::GetBuffer': 関数に 1 個の引数を指定できません。
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.22000.0\shared\dxgi.h(1816,43): message : 'IDXGISwapChain::GetBuffer' の宣言を確認してください
+D:\GitHub\snyEngine\snyEngine\Application.cpp(200,20): error C2065: '_backBuffers': 定義されていない識別子です。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(201,32): error C2065: '_backBuffers': 定義されていない識別子です。
+  main.cpp
+D:\GitHub\snyEngine\snyEngine\Application.h(34,8): error C2143: 構文エラー: ';' が '<' の前にありません。
+D:\GitHub\snyEngine\snyEngine\Application.h(34,8): error C4430: 型指定子がありません - int と仮定しました。メモ: C++ は int を既定値としてサポートしていません
+D:\GitHub\snyEngine\snyEngine\Application.h(34,38): error C2238: ';' の前に無効なトークンがあります。
+  コードを生成中...

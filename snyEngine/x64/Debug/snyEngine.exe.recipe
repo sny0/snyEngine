@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>D:\GitHub\snyEngine\x64\Debug\snyEngine.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>D:\GitHub\snyEngine\x64\Debug\BasicPS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>D:\GitHub\snyEngine\x64\Debug\BasicVS.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

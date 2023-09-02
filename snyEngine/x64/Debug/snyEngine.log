@@ -1,0 +1,14 @@
+﻿  Application.cpp
+D:\GitHub\snyEngine\snyEngine\Application.cpp(406,79): warning C4267: '引数': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(521,31): warning C4267: '引数': 'size_t' から '_Ty' に変換しました。データが失われているかもしれません。
+          with
+          [
+              _Ty=int
+          ]
+D:\GitHub\snyEngine\snyEngine\Application.cpp(562,24): warning C4267: '+=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(601,6): warning C4353: 非標準の拡張機能が使用: 関数式として定数 0 が使用されています。本来の '__noop' 関数を使用してください
+D:\GitHub\snyEngine\snyEngine\Application.cpp(717,70): warning C4244: '=': 'UINT64' から 'UINT' への変換です。データが失われる可能性があります。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(753,68): warning C4244: '=': 'UINT64' から 'UINT' への変換です。データが失われる可能性があります。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(1024,35): warning C4267: '初期化中': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+D:\GitHub\snyEngine\snyEngine\Application.cpp(1029,32): warning C4267: '=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+  snyEngine.vcxproj -> D:\GitHub\snyEngine\x64\Debug\snyEngine.exe
