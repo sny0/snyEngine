@@ -1,5 +1,6 @@
 #pragma once
 #include"SNYELib.h"
+#include"SubModel.h"
 #include<Windows.h>
 #include<tchar.h>
 #include<d3d12.h>
@@ -23,10 +24,12 @@ using namespace DirectX;
 class Model
 {
 private:
+	int _subModelNum = 0;
 
+	vector<SubModel*> _subModels;
 
 public:
-	string name;
+	string _name;
 
 	vector<Vertex> _vertices;
 	Microsoft::WRL::ComPtr<ID3D12Resource> _vertexBuffer = nullptr;
@@ -40,8 +43,13 @@ public:
 	ScratchImage _scratchImage = {};
 	Microsoft::WRL::ComPtr<ID3D12Resource> _textureBuffer = nullptr;
 
-	unsigned int _materialNum;
+	unsigned int _materialNum = 0;
 	
+	map<string, Material> _materials;
+
+	string _mtlPath;
+	Microsoft::WRL::ComPtr<ID3D12Resource> _materialBuffer = nullptr;
+	D3D12_CONSTANT_BUFFER_VIEW_DESC _cbvDesc = {};
 
 	Model();
 	~Model();

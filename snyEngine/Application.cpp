@@ -8,9 +8,10 @@
 using namespace std;
 
 
-const unsigned int window_width = 1280;
-const unsigned int window_height = 720;
+const unsigned int window_width = 1280; // ウィンドウの幅
+const unsigned int window_height = 720; // ウィンドウの高さ
 
+// ウィンドウプロシージャ
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	if (msg == WM_DESTROY) {
 		PostQuitMessage(0);
@@ -27,6 +28,7 @@ void EnableDebugLayer() {
 	debugLayer->Release();
 }
 
+// ゲームウィンドウの生成
 void Application::CreateGameWindow(HWND& hwnd, WNDCLASSEX& windowClass) {
 	// ウィンドウクラスを生成し、登録
 	windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -53,6 +55,7 @@ void Application::CreateGameWindow(HWND& hwnd, WNDCLASSEX& windowClass) {
 		nullptr); // 追加パラメータ
 }
 
+// DXGIの初期化
 HRESULT Application::InitializeDXGIDevice() {
 	// DXGIFactoryの初期化
 	UINT flagsDXGI = 0;
@@ -106,6 +109,7 @@ HRESULT Application::InitializeDXGIDevice() {
 	return result;
 }
 
+// Comand系統の初期化
 HRESULT Application::InitializeCommand() {
 	// コマンドアロケーターの生成
 	HRESULT result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(_cmdAllocator.ReleaseAndGetAddressOf()));
@@ -134,6 +138,7 @@ HRESULT Application::InitializeCommand() {
 	return 0;
 }
 
+// スワップチェーンの生成
 HRESULT Application::CreateSwapChain() {
 	// スワップチェインの生成
 	DXGI_SWAP_CHAIN_DESC1  swapchainDesc = {};
@@ -159,6 +164,7 @@ HRESULT Application::CreateSwapChain() {
 	return result;
 }
 
+// 最終的なレンダーターゲットの生成
 HRESULT Application::CreateFinalRenderTarget() {
 	// RTV用のディスクリプタヒープを生成
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -206,6 +212,7 @@ HRESULT Application::CreateFinalRenderTarget() {
 	return result;
 }
 
+// 初期化
 bool Application::Init() {
 	auto result = CoInitializeEx(0, COINIT_MULTITHREADED);
 	CreateGameWindow(_hwnd, _windowClass);
@@ -252,6 +259,7 @@ bool Application::Init() {
 	return true;
 }
 
+// Run
 void Application::Run() {
 	ShowWindow(_hwnd, SW_SHOW);
 
@@ -271,6 +279,9 @@ void Application::Run() {
 		assert(0);
 		//return false;
 	}
+	if (FAILED(LoadMTLFile("", model))) {
+		assert(0);
+	}
 	if (FAILED(CreateVertexBuffer(model))) {
 		assert(0);
 		//return false;
@@ -279,6 +290,9 @@ void Application::Run() {
 	if (FAILED(CreateIndexBuffer(model))) {
 		assert(0);
 		//return false;
+	}
+	if (FAILED(CreateMaterialBuffer(model))) {
+		assert(0);
 	}
 
 	if (FAILED(LoadTextureFile("", model))) {
@@ -301,6 +315,10 @@ void Application::Run() {
 	}
 
 	if (FAILED(CreateTextureView())) {
+		assert(0);
+	}
+
+	if (FAILED(CreateMaterialView(model))) {
 		assert(0);
 	}
 
@@ -399,6 +417,18 @@ void Application::Run() {
 		_cmdList->SetGraphicsRootDescriptorTable(0, basicHeapH);
 
 
+		ID3D12DescriptorHeap* mdh[] = { _mtlHeap.Get() };
+		_cmdList->SetDescriptorHeaps(1, mdh);
+
+		auto mtlHeapH = _mtlHeap->GetGPUDescriptorHandleForHeapStart();
+		int offset;
+
+		auto cbvsrvIncSize = _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * model._materials.size();
+
+		for (auto& m : model._materials) {
+			_cmdList->SetGraphicsRootDescriptorTable(1, mtlHeapH);
+		}
+
 		//basicHeapH.ptr += _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		//_cmdList->SetGraphicsRootDescriptorTable(1, basicHeapH);
 
@@ -443,10 +473,12 @@ void Application::Run() {
 	}
 }
 
+// アプリの終了
 void Application::Terminate() {
 	UnregisterClass(_windowClass.lpszClassName, _windowClass.hInstance);
 }
 
+// Applicationインスタンスの生成
 Application& Application::Instance() {
 	static Application instance;
 	return instance;
@@ -456,6 +488,7 @@ Application::~Application() {
 
 }
 
+// OBJファイルのロード
 HRESULT Application::LoadOBJFile(const char* path, Model& model){
 
 	cout << "start loadOBJFileMethod" << endl;
@@ -486,8 +519,10 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 	int k = 0;
 	while (getline(ifs, line)) {
 		cout << k++ << endl;
+		if (line == "") {
 
-		if (line[0] == '#') {
+		}
+		else if (line[0] == '#') {
 			memo.push_back(line.substr(1, string::npos));
 		}
 		else {
@@ -520,8 +555,16 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 				f.push_back(tmpf);
 				fs.push_back(strs.size()-1);
 			}
+			else if(strs[0] == "mtllib") {
+				model._mtlPath = strs[1];
+			}
 			else if (strs[0] == "usemtl") {
-
+				string tmpMtlName = strs[1];
+				map<string, Material>::iterator it = model._materials.find(tmpMtlName);
+				if (it != model._materials.end()) {
+					model._materials[tmpMtlName];
+					model._materialNum++;
+				}
 			}
 			else {
 
@@ -547,7 +590,7 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 			Vertex tmpVert = {};
 
 			tmpVert.position = v[f[i][j].x - 1];
-			tmpVert.uv = vt[f[i][j].y - 1];
+			tmpVert.uv = { vt[f[i][j].y - 1].x, 1 - vt[f[i][j].y - 1].y };
 			tmpVert.normal = vn[f[i][j].z - 1];
 			model._vertices.push_back(tmpVert);
 			cout << "i:" << i << "  j:" << j << "  vertex:" << tmpVert.position.x <<" " << tmpVert.position.y << " " << tmpVert.position.z << endl;
@@ -591,8 +634,105 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 
 }
 
+// MTLファイルのロード
+HRESULT Application::LoadMTLFile(const char* path, Model& model) {
+	cout << "start loadOBJFileMethod" << endl;
+	ifstream ifs("D:/GitHub/snyEngine/snyEngine/model/horse.mtl");
+
+
+	if (!ifs) {
+		//char strerr[256];
+		//strerror_s(strerr, 256, ifs);
+		//MessageBox(_hwnd, strerr, "Open Error", MB_ICONERROR);
+		cout << "Don't Open File.";
+		assert(0);
+		return E_ABORT;
+	}
+
+	cout << "Open file." << endl;
+
+	cout << "start read file" << endl;
+
+	vector<string> memo;
+	//Material* mtl;
+	string line;
+	int k = 0;
+
+	string mtlName;
+
+	while (getline(ifs, line)) {
+		cout << k++ << endl;
+		if (line == "") {
+
+		}
+		else if (line[0] == '#') {
+			memo.push_back(line.substr(1, string::npos));
+		}
+		else {
+			vector<string> strs;
+			strs.clear();
+			SeparateString(line, strs, " ");
+			if (strs[0] == "newmtl") {
+				Material mtl;
+
+				mtlName = strs[1];
+				model._materials.insert(std::make_pair(mtlName, mtl));
+			}
+			else if (strs[0] == "Ka") {
+				if (strs.size() == 4) {
+					XMFLOAT3 tmpa = { stof(strs[1]), stof(strs[2]), stof(strs[3]) };
+					model._materials[mtlName].ambient = tmpa;
+				}
+			}
+			else if (strs[0] == "Kd") {
+				if (strs.size() == 4) {
+					XMFLOAT3 tmpd = { stof(strs[1]), stof(strs[2]), stof(strs[3]) };
+					model._materials[mtlName].diffuse = tmpd;
+				}
+			}
+			else if (strs[0] == "Ks") {
+				if (strs.size() == 4) {
+					XMFLOAT3 tmps = { stof(strs[1]), stof(strs[2]), stof(strs[3]) };
+					model._materials[mtlName].specular = tmps;
+				}
+			}
+			else if (strs[0] == "Ns") {
+				if (strs.size() == 2) {
+					model._materials[mtlName].specularity = stof(strs[1]);
+				}
+			}
+			else if (strs[0] == "d") {
+				if (strs.size() == 2) {
+					model._materials[mtlName].dissolve = stof(strs[1]);
+				}
+			}
+			else {
+
+			}
+		}
+	}
+
+	cout << "finish read file";
+
+	ifs.close();
+
+	cout << "Print loaded Material Data" << endl;
+	for (auto m : model._materials) {
+		cout << "Material Name: " << m.first << endl;
+		cout << "abient: " << m.second.ambient.x << ", " << m.second.ambient.y << ", " << m.second.ambient.z << endl;
+		cout << "diffuse: " << m.second.diffuse.x << ", " << m.second.diffuse.y << ", " << m.second.diffuse.z << endl;
+		cout << "specular: " << m.second.specular.x << ", " << m.second.specular.y << ", " << m.second.specular.z << endl;
+		cout << "dissolve: " << m.second.dissolve << endl;
+		cout << "specularity: " << m.second.specularity << endl;
+		cout << endl;
+	}
+
+	return S_OK;
+}
+
+// テスクチャファイルのロード
 HRESULT Application::LoadTextureFile(const char* path, Model& model) {
-	HRESULT result = LoadFromWICFile(L"D:/GitHub/snyEngine/snyEngine/model/snyicon.png",
+	HRESULT result = LoadFromWICFile(L"D:/GitHub/snyEngine/snyEngine/model/horse_tex.png",
 		WIC_FLAGS_NONE,
 		&model._metadata,
 		model._scratchImage
@@ -643,6 +783,7 @@ HRESULT Application::LoadTextureFile(const char* path, Model& model) {
 	return result;
 }
 
+// 深度ステンシルビューの生成
 HRESULT Application::CreateDepthStencilView() {
 	auto depthResDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		DXGI_FORMAT_D32_FLOAT,
@@ -724,6 +865,7 @@ HRESULT Application::CreateVertexBuffer(Model& model) {
 	return result;
 }
 
+// インデックスバッファの生成
 HRESULT Application::CreateIndexBuffer(Model& model) {
 	auto heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 	auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(model._vertexIndices.size() * sizeof(unsigned int));
@@ -755,11 +897,90 @@ HRESULT Application::CreateIndexBuffer(Model& model) {
 	return result;
 }
 
+// マテリアルのバッファの生成
+HRESULT Application::CreateMaterialBuffer(Model& model) {
+	cout << "Print loaded Material Data" << endl;
+	for (auto m : model._materials) {
+		cout << "Material Name: " << m.first << endl;
+		cout << "abient: " << m.second.ambient.x << ", " << m.second.ambient.y << ", " << m.second.ambient.z << endl;
+		cout << "diffuse: " << m.second.diffuse.x << ", " << m.second.diffuse.y << ", " << m.second.diffuse.z << endl;
+		cout << "specular: " << m.second.specular.x << ", " << m.second.specular.y << ", " << m.second.specular.z << endl;
+		cout << "dissolve: " << m.second.dissolve << endl;
+		cout << "specularity: " << m.second.specularity << endl;
+		cout << endl;
+	}
+	// マテリアルバッファーを作成
+	auto materialBufferSize = sizeof(Material);
+	materialBufferSize = (materialBufferSize + 0xff) & ~0xff;
+	auto heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(materialBufferSize * model._materials.size());
+	HRESULT result = _dev->CreateCommittedResource(
+		&heapProp,
+		D3D12_HEAP_FLAG_NONE,
+		&resDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(model._materialBuffer.ReleaseAndGetAddressOf())
+	);
+
+	if (FAILED(result)) {
+		assert(0);
+		return result;
+	}
+
+	char* tmaterialMap = nullptr;
+	result = model._materialBuffer->Map(0, nullptr, (void**)&tmaterialMap);
+	if (FAILED(result)) {
+		assert(0);
+		return result;
+	}
+
+	for (auto& m : model._materials) {
+		cout << " a" << endl;
+		*((Material*)tmaterialMap) = m.second;
+		//tmaterialMap += materialBufferSize;
+	}
+
+	Material* materialMap = (Material*)tmaterialMap;
+
+	cout << "Print Mapped Material Data" << endl;
+	for (int i = 0; i < model._materials.size(); i++) {
+		cout << "Mapped Material Index : " << i << endl;
+		cout << "ambient: " << materialMap[i].ambient.x << ", " << materialMap[i].ambient.y << ", " << materialMap[i].ambient.z << endl;
+		cout << "diffuse: " << materialMap[i].diffuse.x << ", " << materialMap[i].diffuse.y << ", " << materialMap[i].diffuse.z << endl;
+		cout << "specular: " << materialMap[i].specular.x << ", " << materialMap[i].specular.y << ", " << materialMap[i].specular.z << endl;
+		cout << "dissolve: " << materialMap[i].dissolve << endl;
+		cout << "specularity: " << materialMap[i].specularity << endl;
+	}
+
+
+	model._materialBuffer->Unmap(0, nullptr);
+
+	D3D12_DESCRIPTOR_HEAP_DESC materialDescHeapDesc = {};
+	materialDescHeapDesc.NumDescriptors = model._materials.size();
+	materialDescHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+	materialDescHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	result = _dev->CreateDescriptorHeap(&materialDescHeapDesc, IID_PPV_ARGS(_mtlHeap.ReleaseAndGetAddressOf()));
+
+	if (FAILED(result)) {
+		assert(0);
+		return result;
+	}
+
+	model._cbvDesc.BufferLocation = model._materialBuffer->GetGPUVirtualAddress();
+	model._cbvDesc.SizeInBytes = static_cast<UINT>(materialBufferSize);
+
+
+	return S_OK;
+}
+
+// 深度ステンシルビューの生成
 HRESULT Application::CreateSceneTransformView() {
 	_worldMat = XMMatrixIdentity();
 	//_worldMat = XMMatrixRotationY(XM_PIDIV4);
-	XMFLOAT3 eye(0, 0, -3);
-	XMFLOAT3 target(0, 0, 0);
+	XMFLOAT3 eye(0, 0, -2.5);
+	XMFLOAT3 target(0, 1, 0);
 	XMFLOAT3 up(0, 1, 0);
 
 	_viewMat = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
@@ -814,6 +1035,7 @@ HRESULT Application::CreateSceneTransformView() {
 	return result;
 }
 
+// テクスチャのビューの生成
 HRESULT Application::CreateTextureView() {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Format = _models[0]->_metadata.format;
@@ -834,8 +1056,23 @@ HRESULT Application::CreateTextureView() {
 	return S_OK;
 }
 
+// マテリアルのビューの生成
+HRESULT Application::CreateMaterialView(Model& model) {
+
+	auto mtlHeapH = _mtlHeap->GetCPUDescriptorHandleForHeapStart();
+
+	for (auto& m : model._materials) {
+		_dev->CreateConstantBufferView(&model._cbvDesc, mtlHeapH);
+		mtlHeapH.ptr += static_cast<ULONG_PTR>(_dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+		model._cbvDesc.BufferLocation += model._cbvDesc.SizeInBytes;
+	}
+
+	return S_OK;
+}
+
+// ルートシグネチャの生成
 HRESULT Application::CreateRootSignature() {
-	D3D12_DESCRIPTOR_RANGE descTblRanges[2] = {};
+	D3D12_DESCRIPTOR_RANGE descTblRanges[3] = {};
 	descTblRanges[0].NumDescriptors = 1;
 	descTblRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 	descTblRanges[0].BaseShaderRegister = 0;
@@ -846,17 +1083,27 @@ HRESULT Application::CreateRootSignature() {
 	descTblRanges[1].BaseShaderRegister = 0;
 	descTblRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+	descTblRanges[2].NumDescriptors = 1;
+	descTblRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	descTblRanges[2].BaseShaderRegister = 1;
+	descTblRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 	/*
 	CD3DX12_DESCRIPTOR_RANGE descTblRanges[2] = {};
 	descTblRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
 	descTblRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 	*/
 
-	D3D12_ROOT_PARAMETER rootparam = {};
-	rootparam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootparam.DescriptorTable.pDescriptorRanges = &descTblRanges[0];
-	rootparam.DescriptorTable.NumDescriptorRanges = 2;
-	rootparam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	D3D12_ROOT_PARAMETER rootparam[2] = {};
+	rootparam[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootparam[0].DescriptorTable.pDescriptorRanges = &descTblRanges[0];
+	rootparam[0].DescriptorTable.NumDescriptorRanges = 2;
+	rootparam[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	rootparam[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootparam[1].DescriptorTable.pDescriptorRanges = &descTblRanges[2];
+	rootparam[1].DescriptorTable.NumDescriptorRanges = 1;
+	rootparam[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	//CD3DX12_ROOT_PARAMETER rootParams[1] = {};
 	//rootParams[0].InitAsDescriptorTable(2, &descTblRanges[0]);
@@ -872,8 +1119,8 @@ HRESULT Application::CreateRootSignature() {
 
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	rootSignatureDesc.pParameters = &rootparam;
-	rootSignatureDesc.NumParameters = 1;
+	rootSignatureDesc.pParameters = &rootparam[0];
+	rootSignatureDesc.NumParameters = 2;
 
 	D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -919,6 +1166,7 @@ HRESULT Application::CreateRootSignature() {
 
 }
 
+// グラフィクスパイプラインの生成
 HRESULT Application::CreateBasicGraphicsPipeline() {
 	Microsoft::WRL::ComPtr<ID3DBlob> vsBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> psBlob = nullptr;
@@ -1019,6 +1267,10 @@ HRESULT Application::CreateBasicGraphicsPipeline() {
 	return result;
 }
 
+// 指定した文字列で文字列を分解する関数
+// string str: 分解される文字列
+// vector<string>& vec: 分解した文字列を保管する文字列
+// const string cs: 分解する文字列
 void Application::SeparateString(string str, vector<string>& vec, const string cs) {
 	int offset = 0;
 	int tmpPos = str.find(cs, offset);
@@ -1031,5 +1283,7 @@ void Application::SeparateString(string str, vector<string>& vec, const string c
 	if (offset < str.size()) {
 		vec.push_back(str.substr(offset, str.size()-offset));
 	}
+
+	return;
 }
 

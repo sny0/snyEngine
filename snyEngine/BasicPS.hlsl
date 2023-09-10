@@ -20,43 +20,34 @@ cbuffer SceneData : register(b0) {
 };
 //定数バッファ1
 //マテリアル用
-/*
+
 cbuffer Material : register(b1) {
-	float4 diffuse;//ディフューズ色
-	float4 specular;//スペキュラ
-	float3 ambient;//アンビエント
+	float3 ambientColor; // 環境光
+	float3 diffuseColor; // 拡散反射光
+	float3 specularColor; // 鏡面反射光
+	float dissolve; // 透明度
+	float specularity; // 鏡面反射率
 };
-*/
 
 float4 BasicPS(BasicType input) : SV_TARGET{
-	return float4(tex.Sample(smp, input.uv));
-	//return float4(input.vnormal.x, input.vnormal.y, 0.0f, 1.0f);
-	//return float4(1.0f, 1.0f, 1.0f, 1.0f);
-	/*
-	float3 light = normalize(float3(1,-1,1));//光の向かうベクトル(平行光線)
-	float3 lightColor = float3(1,1,1);//ライトのカラー(1,1,1で真っ白)
+	//return float4(input.normal.xyz, 1.0f);
+	//return float4(specular.xyz, 1.0f);
 
-	//ディフューズ計算
-	float diffuseB = saturate(dot(-light, input.normal));
-	float4 toonDif = toon.Sample(smpToon, float2(0, 1.0 - diffuseB));
+	float4 lightColor = {1.0f, 1.0f, 1.0f, 1.0f}; // ライトの光
+	float3 lightVec = normalize(float3(1.0f, -1.0f, 1.0f)); // ライト（ディレクションライト）の方向ベクトル
 
-	//光の反射ベクトル
-	float3 refLight = normalize(reflect(light, input.normal.xyz));
-	float specularB = pow(saturate(dot(refLight, -input.ray)),specular.a);
+	float diffuseBrightness = saturate(dot(-lightVec, input.normal)); // 拡散反射の強さ
 
-	//スフィアマップ用UV
-	float2 sphereMapUV = input.vnormal.xy;
-	sphereMapUV = (sphereMapUV + float2(1, -1)) * float2(0.5, -0.5);
+	float3 reflectLightVec = normalize(reflect(lightVec, input.normal.xyz)); // ライトがテクセルの法線で反射したときのベクトル
+	float specularBrightness = pow(saturate(dot(reflectLightVec, -input.ray)), 3) * specularity/1000; // 鏡面反射の強さ
 
-	float4 texColor = tex.Sample(smp, input.uv); //テクスチャカラー
+	float4 textureColor = tex.Sample(smp, input.uv); // テクスチャの色
 
+	float4 finalColor = saturate(lightColor * textureColor * diffuseBrightness * float4(diffuseColor.xyz, 1.0f)); // 拡散反射の適応
+	finalColor += saturate(lightColor * textureColor * specularBrightness * float4(specularColor.xyz, 1.0f)); // 鏡面反射の適応
+	finalColor += 0.5 * saturate(lightColor * textureColor *  float4(ambientColor.xyz, 1.0f)); // 環境光の適応
+	finalColor *= float4(1.0f, 1.0f, 1.0f, dissolve); // 透明度の適応
+	finalColor = saturate(finalColor); // 丸める
 
-	return saturate(toonDif//輝度(トゥーン)
-		* diffuse//ディフューズ色
-		* texColor//テクスチャカラー
-		* sph.Sample(smp, sphereMapUV))//スフィアマップ(乗算)
-		+ saturate(spa.Sample(smp, sphereMapUV) * texColor//スフィアマップ(加算)
-		+ float4(specularB * specular.rgb, 1))//スペキュラー
-		+ float4(texColor * ambient * 0.5,1);//アンビエント(明るくなりすぎるので0.5にしてます)
-	*/
+	return finalColor;
 }
