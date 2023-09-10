@@ -219,6 +219,7 @@ bool Application::Init() {
 #ifdef _DEBUG
 	EnableDebugLayer();
 #endif
+	CreatePath();
 
 	// DXGI関連の初期化
 	if (FAILED(InitializeDXGIDevice())) {
@@ -322,6 +323,7 @@ void Application::Run() {
 		assert(0);
 	}
 
+	/*
 	//cout << "print v" << endl;
 	for (int i = 0; i<_models[0]->_vertices.size(); i++) {
 		cout << i << " " << _models[0]->_vertices[i].position.x << " " << _models[0]->_vertices[i].position.y << " " << _models[0]->_vertices[i].position.z << endl;
@@ -332,10 +334,12 @@ void Application::Run() {
 		cout << i << " " << _models[0]->_vertexIndices[i * 3] << " " << _models[0]->_vertexIndices[i * 3 + 1] << " " << _models[0]->_vertexIndices[i * 3 + 2] << endl;
 	}
 	//cout << "c" << endl;
+	*/
 	auto dsvH = _dsvHeap->GetCPUDescriptorHandleForHeapStart();
 	float angle = 0.0f;
 	MSG msg = {}; // ウィンドウメッセージ
 
+	
 	while (true) {
 		_worldMat = XMMatrixRotationY(angle);
 		_sceneMap->world = _worldMat;
@@ -492,16 +496,18 @@ Application::~Application() {
 HRESULT Application::LoadOBJFile(const char* path, Model& model){
 
 	cout << "start loadOBJFileMethod" << endl;
-	ifstream ifs("D:/GitHub/snyEngine/snyEngine/model/horse.obj");
+	string modelFilePath = _modelPath + "\\horse.obj";
+	ifstream ifs(modelFilePath);
+	//cout << "modelPath: " << _modelPathD << endl;
 
-	
 	if (!ifs) {
-		//char strerr[256];
-		//strerror_s(strerr, 256, ifs);
-		//MessageBox(_hwnd, strerr, "Open Error", MB_ICONERROR);
-		cout << "Don't Open File.";
-		assert(0);
-		return E_ABORT;
+		modelFilePath = _modelPathD + "\\horse.obj";
+		ifs.open(modelFilePath);
+		if (!ifs) {
+			cout << "Don't Open File.";
+			assert(0);
+			return E_ABORT;
+		}
 	}
 	
 	cout << "Open file." << endl;
@@ -518,7 +524,7 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 	cout << "start read file" << endl;
 	int k = 0;
 	while (getline(ifs, line)) {
-		cout << k++ << endl;
+
 		if (line == "") {
 
 		}
@@ -575,10 +581,10 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 	cout << "finish read file";
 
 	ifs.close();
-	cout << "Num v:" << v.size() << " vt:" << vt.size() << " vn:" << vn.size() << " f:" << f.size() << endl;
-	for (int i = 0; i < f.size(); i++) {
-		cout << "i:" << i << " num:" << f[i].size() << endl;
-	}
+	//cout << "Num v:" << v.size() << " vt:" << vt.size() << " vn:" << vn.size() << " f:" << f.size() << endl;
+	//for (int i = 0; i < f.size(); i++) {
+	//	cout << "i:" << i << " num:" << f[i].size() << endl;
+	//}
 
 	std::cout << "close file" << endl;
 
@@ -593,14 +599,14 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 			tmpVert.uv = { vt[f[i][j].y - 1].x, 1 - vt[f[i][j].y - 1].y };
 			tmpVert.normal = vn[f[i][j].z - 1];
 			model._vertices.push_back(tmpVert);
-			cout << "i:" << i << "  j:" << j << "  vertex:" << tmpVert.position.x <<" " << tmpVert.position.y << " " << tmpVert.position.z << endl;
+			//cout << "i:" << i << "  j:" << j << "  vertex:" << tmpVert.position.x <<" " << tmpVert.position.y << " " << tmpVert.position.z << endl;
 		}
 
 		for (int j = 0; f[i].size() - j >= 3; j++) {
 			model._vertexIndices.push_back(offset);
 			model._vertexIndices.push_back(offset+1+j);
 			model._vertexIndices.push_back(offset+2+j);
-			cout << offset << " " << offset + 1 + j << " " << offset + 2 + j << endl;
+			//cout << offset << " " << offset + 1 + j << " " << offset + 2 + j << endl;
 		}
 		offset += f[i].size();
 	}
@@ -608,14 +614,14 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 
 	cout << endl;
 	cout << "Print Vertices Data." << endl;
-	for (int i = 0; i < model._vertices.size(); i++) {
-		cout << i << ": " << model._vertices[i].position.x << " " << model._vertices[i].position.y << " " << model._vertices[i].position.z << endl;
-	}
+	//for (int i = 0; i < model._vertices.size(); i++) {
+	//	cout << i << ": " << model._vertices[i].position.x << " " << model._vertices[i].position.y << " " << model._vertices[i].position.z << endl;
+	//}
 	cout << endl;
 	cout << "Print VertexIndices Data." << endl;
 
 	for (int i = 0; i < model._vertexIndices.size() / 3; i++) {
-		cout << model._vertexIndices[i*3] << " " << model._vertexIndices[i*3 + 1] << " " << model._vertexIndices[i*3 + 2] << endl;
+		//cout << model._vertexIndices[i*3] << " " << model._vertexIndices[i*3 + 1] << " " << model._vertexIndices[i*3 + 2] << endl;
 	}
 
 	/*
@@ -637,16 +643,19 @@ HRESULT Application::LoadOBJFile(const char* path, Model& model){
 // MTLファイルのロード
 HRESULT Application::LoadMTLFile(const char* path, Model& model) {
 	cout << "start loadOBJFileMethod" << endl;
-	ifstream ifs("D:/GitHub/snyEngine/snyEngine/model/horse.mtl");
+
+	string filePath = _modelPath + "\\horse.mtl";
+	ifstream ifs(filePath);
 
 
 	if (!ifs) {
-		//char strerr[256];
-		//strerror_s(strerr, 256, ifs);
-		//MessageBox(_hwnd, strerr, "Open Error", MB_ICONERROR);
-		cout << "Don't Open File.";
-		assert(0);
-		return E_ABORT;
+		filePath = _modelPathD + "\\horse.mtl";
+		ifs.open(filePath);
+		if (!ifs) {
+			cout << "Don't Open File.";
+			assert(0);
+			return E_ABORT;
+		}
 	}
 
 	cout << "Open file." << endl;
@@ -732,15 +741,41 @@ HRESULT Application::LoadMTLFile(const char* path, Model& model) {
 
 // テスクチャファイルのロード
 HRESULT Application::LoadTextureFile(const char* path, Model& model) {
+	cout << "Load Texture File" << endl;
+	string filePath = _modelPath + "\\horse_tex.png";
+	wstring wfilePath(filePath.begin(), filePath.end());
+
+	cout << filePath << endl;
+
+	/*
 	HRESULT result = LoadFromWICFile(L"D:/GitHub/snyEngine/snyEngine/model/horse_tex.png",
 		WIC_FLAGS_NONE,
 		&model._metadata,
 		model._scratchImage
 	);
+	*/
 
-	if (FALSE(result)) {
-		assert(0);
-		return result;
+	HRESULT result = LoadFromWICFile(wfilePath.c_str(),
+		WIC_FLAGS_NONE,
+		&model._metadata,
+		model._scratchImage
+	);
+	cout << result << endl;
+
+	if (result != S_OK) {
+		filePath = _modelPathD + "\\horse_tex.png";
+		wstring wfilePathD(filePath.begin(), filePath.end());
+		result = LoadFromWICFile(wfilePathD.c_str(),
+			WIC_FLAGS_NONE,
+			&model._metadata,
+			model._scratchImage
+		);
+		cout << result << endl;
+
+		if (FALSE(result)) {
+			assert(0);
+			return result;
+		}
 	}
 
 	auto img = model._scratchImage.GetImage(0, 0, 0);
@@ -845,20 +880,20 @@ HRESULT Application::CreateVertexBuffer(Model& model) {
 	Vertex* vertMap = nullptr;
 	result = model._vertexBuffer->Map(0, nullptr, (void**)&vertMap);
 	copy(begin(model._vertices), end(model._vertices), vertMap);
-	cout << "vertices num:" << model._vertices.size() << endl;
-	cout << "check vertMap" << endl;
-	for (int i = 0; i < model._vertices.size(); i++) {
-		cout << i+1 <<  " pos: " << vertMap[i].position.x << " " << vertMap[i].position.y << " " << vertMap[i].position.z << endl;
-		cout << i+1 <<  " nor: " << vertMap[i].normal.x << " " << vertMap[i].normal.y << " " << vertMap[i].normal.z << endl;
-		cout << i+1 <<  " uv : " << vertMap[i].uv.x << " " << vertMap[i].uv.y << endl;
-	}
+	//cout << "vertices num:" << model._vertices.size() << endl;
+	//cout << "check vertMap" << endl;
+	//for (int i = 0; i < model._vertices.size(); i++) {
+	//	cout << i+1 <<  " pos: " << vertMap[i].position.x << " " << vertMap[i].position.y << " " << vertMap[i].position.z << endl;
+	//	cout << i+1 <<  " nor: " << vertMap[i].normal.x << " " << vertMap[i].normal.y << " " << vertMap[i].normal.z << endl;
+	//	cout << i+1 <<  " uv : " << vertMap[i].uv.x << " " << vertMap[i].uv.y << endl;
+	//}
 	model._vertexBuffer->Unmap(0, nullptr);
 
 	model._vertexBufferView.BufferLocation = model._vertexBuffer->GetGPUVirtualAddress();
 	model._vertexBufferView.SizeInBytes = model._vertexBuffer->GetDesc().Width;
-	cout << "size of vbv: " << model._vertexBufferView.SizeInBytes << endl;
+	//cout << "size of vbv: " << model._vertexBufferView.SizeInBytes << endl;
 	model._vertexBufferView.StrideInBytes = sizeof(Vertex);
-	cout << " one size of vbv: " << model._vertexBufferView.StrideInBytes << endl;
+	//cout << " one size of vbv: " << model._vertexBufferView.StrideInBytes << endl;
 
 
 
@@ -884,9 +919,9 @@ HRESULT Application::CreateIndexBuffer(Model& model) {
 	result = model._indexBuffer->Map(0, nullptr, (void**)&indeMap);
 	copy(begin(model._vertexIndices), end(model._vertexIndices), indeMap);
 	cout << "check indexMap" << endl;
-	for (int i = 0; i < model._vertexIndices.size()/3; i++) {
-		cout << indeMap[3*i] << " " << indeMap[3*i + 1] << " " << indeMap[3*i + 2] << endl;
-	}
+	//for (int i = 0; i < model._vertexIndices.size()/3; i++) {
+	//	cout << indeMap[3*i] << " " << indeMap[3*i + 1] << " " << indeMap[3*i + 2] << endl;
+	//}
 	cout << endl;
 	model._indexBuffer->Unmap(0, nullptr);
 
@@ -1172,7 +1207,10 @@ HRESULT Application::CreateBasicGraphicsPipeline() {
 	Microsoft::WRL::ComPtr<ID3DBlob> psBlob = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 
-	HRESULT result = D3DCompileFromFile(L"BasicVS.hlsl",
+	string vsShaderPath = _shaderPath + "\\BasicVS.hlsl";
+	cout << vsShaderPath << endl;
+	wstring wvsShaderPath(vsShaderPath.begin(), vsShaderPath.end());
+	HRESULT result = D3DCompileFromFile(wvsShaderPath.c_str(),
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"BasicVS",
@@ -1182,10 +1220,36 @@ HRESULT Application::CreateBasicGraphicsPipeline() {
 		&vsBlob,
 		&errorBlob
 	);
-	
+
 	if (FAILED(result)) {
 		if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
-			::OutputDebugStringA("ファイルが見当たりません");
+			vsShaderPath = _shaderPathD + "\\BasicVS.hlsl";
+			wstring wvsShaderPath(vsShaderPath.begin(), vsShaderPath.end());
+			result = D3DCompileFromFile(wvsShaderPath.c_str(),
+				nullptr,
+				D3D_COMPILE_STANDARD_FILE_INCLUDE,
+				"BasicVS",
+				"vs_5_0",
+				D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+				0,
+				&vsBlob,
+				&errorBlob
+			);
+			
+			if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+				::OutputDebugStringA("ファイルが見当たりません");
+				assert(0);
+				return result;
+			}
+			else if(result != S_OK) {
+				std::string errstr;
+				errstr.resize(errorBlob->GetBufferSize());
+				std::copy_n((char*)errorBlob->GetBufferPointer(), errorBlob->GetBufferSize(), errstr.begin());
+				errstr += "\n";
+				OutputDebugStringA(errstr.c_str());
+				assert(0);
+				return result;
+			}
 		}
 		else {
 			std::string errstr;
@@ -1193,11 +1257,16 @@ HRESULT Application::CreateBasicGraphicsPipeline() {
 			std::copy_n((char*)errorBlob->GetBufferPointer(), errorBlob->GetBufferSize(), errstr.begin());
 			errstr += "\n";
 			OutputDebugStringA(errstr.c_str());
+			assert(0);
+			return result;
 		}
-		return result;
 	}
 
-	result = D3DCompileFromFile(L"BasicPS.hlsl",
+	string psShaderPath = _shaderPath + "\\BasicPS.hlsl";
+	cout << psShaderPath << endl;
+	wstring wpsShaderPath(psShaderPath.begin(), psShaderPath.end());
+
+	result = D3DCompileFromFile(wpsShaderPath.c_str(),
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"BasicPS",
@@ -1210,7 +1279,33 @@ HRESULT Application::CreateBasicGraphicsPipeline() {
 
 	if (FAILED(result)) {
 		if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
-			::OutputDebugStringA("ファイルが見当たりません");
+			psShaderPath = _shaderPathD + "\\BasicPS.hlsl";
+			wstring wpsShaderPath(psShaderPath.begin(), psShaderPath.end());
+			result = D3DCompileFromFile(wpsShaderPath.c_str(),
+				nullptr,
+				D3D_COMPILE_STANDARD_FILE_INCLUDE,
+				"BasicPS",
+				"ps_5_0",
+				D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
+				0,
+				&psBlob,
+				&errorBlob
+			);
+
+			if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+				::OutputDebugStringA("ファイルが見当たりません");
+				assert(0);
+				return result;
+			}
+			else if (result != S_OK) {
+				std::string errstr;
+				errstr.resize(errorBlob->GetBufferSize());
+				std::copy_n((char*)errorBlob->GetBufferPointer(), errorBlob->GetBufferSize(), errstr.begin());
+				errstr += "\n";
+				OutputDebugStringA(errstr.c_str());
+				assert(0);
+				return result;
+			}
 		}
 		else {
 			std::string errstr;
@@ -1218,8 +1313,9 @@ HRESULT Application::CreateBasicGraphicsPipeline() {
 			std::copy_n((char*)errorBlob->GetBufferPointer(), errorBlob->GetBufferSize(), errstr.begin());
 			errstr += "\n";
 			OutputDebugStringA(errstr.c_str());
+			assert(0);
+			return result;
 		}
-		return result;
 	}
 
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
@@ -1268,9 +1364,9 @@ HRESULT Application::CreateBasicGraphicsPipeline() {
 }
 
 // 指定した文字列で文字列を分解する関数
-// string str: 分解される文字列
-// vector<string>& vec: 分解した文字列を保管する文字列
-// const string cs: 分解する文字列
+// @param string str: 分解される文字列
+// @param vector<string>& vec: 分解した文字列を保管する文字列
+// @param const string cs: 分解する文字列
 void Application::SeparateString(string str, vector<string>& vec, const string cs) {
 	int offset = 0;
 	int tmpPos = str.find(cs, offset);
@@ -1287,3 +1383,22 @@ void Application::SeparateString(string str, vector<string>& vec, const string c
 	return;
 }
 
+void Application::CreatePath() {
+	char currentDirectoryPath[10000];
+
+	GetCurrentDirectory(10000, currentDirectoryPath);
+#ifdef _DEBUG
+	_shaderPathD = currentDirectoryPath;
+	_modelPathD = string(currentDirectoryPath) + "\\model";
+	
+#endif
+	string currentDirectoryPathS = string(currentDirectoryPath);
+	size_t found = currentDirectoryPathS.rfind("x64");
+	if (found != string::npos) {
+		auto folderPath = currentDirectoryPathS.substr(0, found-1);
+		_shaderPath = folderPath + "\\snyEngine";
+		_modelPath = folderPath + "\\snyEngine\\model";
+	}
+	cout << "modelPath:   " << _modelPathD << endl;
+	return;
+}

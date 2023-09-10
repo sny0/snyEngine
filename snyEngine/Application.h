@@ -82,6 +82,12 @@ private:
 
 	SceneData* _sceneMap = nullptr;
 
+	string _shaderPath = "";
+	string _modelPath = "";
+	string _shaderPathD = "";
+	string _modelPathD = "";
+
+
 	// ウィンドウの生成
 	void CreateGameWindow(HWND& hwnd, WNDCLASSEX& windowClass);
 
@@ -135,6 +141,8 @@ private:
 
 	// 文字列の分裂 string csに入っている文字列で分裂させる
 	void SeparateString(string str, vector<string>& vec, const string cs);
+
+	void CreatePath();
 
 public:
 	static Application& Instance();
