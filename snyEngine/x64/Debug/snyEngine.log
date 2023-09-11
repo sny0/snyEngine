@@ -1,16 +1,4 @@
-﻿  Application.cpp
-D:\GitHub\snyEngine\snyEngine\Application.cpp(440,79): warning C4267: '引数': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
-D:\GitHub\snyEngine\snyEngine\Application.cpp(428,7): warning C4101: 'offset': ローカル変数は 1 度も使われていません。
-D:\GitHub\snyEngine\snyEngine\Application.cpp(562,31): warning C4267: '引数': 'size_t' から '_Ty' に変換しました。データが失われているかもしれません。
-          with
-          [
-              _Ty=int
-          ]
-D:\GitHub\snyEngine\snyEngine\Application.cpp(611,24): warning C4267: '+=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
-D:\GitHub\snyEngine\snyEngine\Application.cpp(775,7): warning C4353: 非標準の拡張機能が使用: 関数式として定数 0 が使用されています。本来の '__noop' 関数を使用してください
-D:\GitHub\snyEngine\snyEngine\Application.cpp(893,70): warning C4244: '=': 'UINT64' から 'UINT' への変換です。データが失われる可能性があります。
-D:\GitHub\snyEngine\snyEngine\Application.cpp(930,68): warning C4244: '=': 'UINT64' から 'UINT' への変換です。データが失われる可能性があります。
-D:\GitHub\snyEngine\snyEngine\Application.cpp(995,63): warning C4267: '=': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
-D:\GitHub\snyEngine\snyEngine\Application.cpp(1372,35): warning C4267: '初期化中': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
-D:\GitHub\snyEngine\snyEngine\Application.cpp(1377,32): warning C4267: '=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+﻿D:\GitHub\snyEngine\snyEngine\BasicPS.hlsl(30,37-64): warning X3206: 'dot': implicit truncation of vector type
+  
+  compilation object save succeeded; see D:\GitHub\snyEngine\x64\Debug\BasicPS.cso
   snyEngine.vcxproj -> D:\GitHub\snyEngine\x64\Debug\snyEngine.exe

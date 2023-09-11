@@ -1,15 +1,6 @@
 #include"BasicType.hlsli"
 Texture2D<float4> tex:register(t0);//0番スロットに設定されたテクスチャ
 SamplerState smp:register(s0);//0番スロットに設定されたサンプラ
-/*
-Texture2D<float4> tex:register(t0);//0番スロットに設定されたテクスチャ(ベース)
-Texture2D<float4> sph:register(t1);//1番スロットに設定されたテクスチャ(乗算)
-Texture2D<float4> spa:register(t2);//2番スロットに設定されたテクスチャ(加算)
-Texture2D<float4> toon:register(t3);//3番スロットに設定されたテクスチャ(トゥーン)
-*/
-
-//SamplerState smp:register(s0);//0番スロットに設定されたサンプラ
-//SamplerState smpToon:register(s1);//1番スロットに設定されたサンプラ
 
 //定数バッファ0
 cbuffer SceneData : register(b0) {
@@ -39,7 +30,7 @@ float4 BasicPS(BasicType input) : SV_TARGET{
 	float diffuseBrightness = saturate(dot(-lightVec, input.normal)); // 拡散反射の強さ
 
 	float3 reflectLightVec = normalize(reflect(lightVec, input.normal.xyz)); // ライトがテクセルの法線で反射したときのベクトル
-	float specularBrightness = pow(saturate(dot(reflectLightVec, -input.ray)), 3) * specularity/1000; // 鏡面反射の強さ
+	float specularBrightness = pow(saturate(dot(reflectLightVec, -input.ray)), 3) * specularity/1; // 鏡面反射の強さ
 
 	float4 textureColor = tex.Sample(smp, input.uv); // テクスチャの色
 
