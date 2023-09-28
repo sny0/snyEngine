@@ -28,5 +28,13 @@ private:
 public:
 	Model* GetModel(int i);
 
-	bool AddModel(Model* m);
+	void AddModel(Model* m);
+
+	void deleteModel(Model* m);
+
+	void Draw();
+
+	ModelManager();
+	
+	~ModelManager();
 };

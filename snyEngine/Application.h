@@ -1,5 +1,9 @@
 #pragma once
 #include"SNYELib.h"
+#include"BasicWindow.h"
+#include"SourceWindow.h"
+#include"MainWindow.h"
+#include"ModelManager.h"
 #include"Model.h"
 #include<Windows.h>
 #include<tchar.h>
@@ -26,6 +30,41 @@ using namespace DirectX;
 // ÉÅÉìÉoïœêîñºÅF_ÅZÅZ
 class Application
 {
+private:
+	HINSTANCE _hInstance;
+	HINSTANCE GetHINSTANCE();
+
+	unsigned int _mainWindow_x = 300;
+	unsigned int _mainWindow_y = 0;
+	unsigned int _mainWindow_width = 1280;
+	unsigned int _mainWindow_height = 720;
+
+	unsigned int _sourceWindow_x = 0;
+	unsigned int _sourceWindow_y = 720;
+	unsigned int _sourceWindow_widht = 1580;
+	unsigned int _sourceWindow_height = 300;
+
+	unsigned int _modelWindow_x = 0;
+	unsigned int _modelWindow_y = 0;
+	unsigned int _modelWindow_width = 300;
+	unsigned int _modelWindow_height = 720;
+
+	unsigned int _detailWindow_x = 1580;
+	unsigned int _detailWindow_y = 0;
+	unsigned int _detailWindow_width = 300;
+	unsigned int _detailWindow_height = 1220;
+
+	MainWindow* _mainWindow = nullptr;
+	//SourceWindow* _sourceWindow = nullptr;
+	//BasicWindow* _modelWindow = nullptr;
+	//BasicWindow* _detailWindow = nullptr;
+
+private:
+	ModelManager _modelManager;
+	map<string, bool> _objFiles; // OBJFileName, MTLFile exist
+	//vector<Source> _objFiles;
+
+
 private:
 	WNDCLASSEX _windowClass;
 	HWND _hwnd;
@@ -144,8 +183,12 @@ private:
 
 	void CreatePath();
 
+	void searchOBJFile();
+
+	void searchMTLFile();
+
 public:
-	static Application& Instance();
+	static Application& Instance(HINSTANCE hi);
 
 	// èâä˙âª
 	bool Init();

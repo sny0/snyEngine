@@ -6,7 +6,7 @@ int main() {
 #include<Windows.h>
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif
-	auto& app = Application::Instance();
+	auto& app = Application::Instance(GetModuleHandle(0));
 	//static Application& app = Application::Instance();
 	if (!app.Init()) {
 		return -1;

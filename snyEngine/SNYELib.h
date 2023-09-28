@@ -1,4 +1,6 @@
 #pragma once
+#include<string>
+#include<Windows.h>
 #include<DirectXMath.h>
 
 using namespace DirectX;
@@ -28,3 +30,16 @@ struct SceneData {
 	XMFLOAT3 eye;
 };
 
+struct Transform {
+	XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f };
+};
+/*
+class Source {
+public:
+	HWND hwnd;
+	string name;
+	bool isMTLExist = false;
+};
+*/

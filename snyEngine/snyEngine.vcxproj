@@ -146,18 +146,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="BasicWindow.h" />
+    <ClInclude Include="MainWindow.h" />
     <ClInclude Include="MaterialManager.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelManager.h" />
     <ClInclude Include="SNYELib.h" />
+    <ClInclude Include="SourceWindow.h" />
     <ClInclude Include="SubModel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="BasicWindow.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="MaterialManager.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="SourseWindow.cpp" />
     <ClCompile Include="SubModel.cpp" />
   </ItemGroup>
   <ItemGroup>

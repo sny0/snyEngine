@@ -24,6 +24,10 @@ using namespace DirectX;
 class Model
 {
 private:
+	string _OBJFileName = "";
+	string _MTLFileName = "";
+	Transform _transform;
+
 	int _subModelNum = 0;
 
 	vector<SubModel*> _subModels;
@@ -54,4 +58,5 @@ public:
 	Model();
 	~Model();
 
+	void Draw();
 };

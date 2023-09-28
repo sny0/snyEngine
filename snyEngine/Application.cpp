@@ -10,7 +10,7 @@ using namespace std;
 
 const unsigned int window_width = 1280; // ウィンドウの幅
 const unsigned int window_height = 720; // ウィンドウの高さ
-
+/*
 // ウィンドウプロシージャ
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	if (msg == WM_DESTROY) {
@@ -20,6 +20,7 @@ LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+*/
 // デバッグレイヤーを有効にする
 void EnableDebugLayer() {
 	ID3D12Debug* debugLayer = nullptr;
@@ -28,6 +29,7 @@ void EnableDebugLayer() {
 	debugLayer->Release();
 }
 
+/*
 // ゲームウィンドウの生成
 void Application::CreateGameWindow(HWND& hwnd, WNDCLASSEX& windowClass) {
 	// ウィンドウクラスを生成し、登録
@@ -54,6 +56,7 @@ void Application::CreateGameWindow(HWND& hwnd, WNDCLASSEX& windowClass) {
 		windowClass.hInstance, //呼び出しアプリケーションハンドル
 		nullptr); // 追加パラメータ
 }
+*/
 
 // DXGIの初期化
 HRESULT Application::InitializeDXGIDevice() {
@@ -155,7 +158,7 @@ HRESULT Application::CreateSwapChain() {
 	swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 	swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	HRESULT result = _dxgiFactory->CreateSwapChainForHwnd(_cmdQueue.Get(),
-		_hwnd,
+		_mainWindow->_hwnd,
 		&swapchainDesc,
 		nullptr,
 		nullptr,
@@ -215,7 +218,13 @@ HRESULT Application::CreateFinalRenderTarget() {
 // 初期化
 bool Application::Init() {
 	auto result = CoInitializeEx(0, COINIT_MULTITHREADED);
-	CreateGameWindow(_hwnd, _windowClass);
+	//CreateGameWindow(_hwnd, _windowClass);
+	_mainWindow = new MainWindow(_hInstance, "Main", _mainWindow_x, _mainWindow_y, _mainWindow_width, _mainWindow_height);
+	//_sourceWindow = new SourceWindow(_hInstance, "Source", _sourceWindow_x, _sourceWindow_y, _sourceWindow_widht, _sourceWindow_height);
+	//_modelWindow = new BasicWindow(_hInstance, "Model", _modelWindow_x, _modelWindow_y, _modelWindow_width, _modelWindow_height);
+	//_detailWindow = new BasicWindow(_hInstance, "Detail", _detailWindow_x, _detailWindow_y, _detailWindow_width, _detailWindow_height);
+
+	//_sourceWindow->CreateButton(_sourceWindow->test_button_hwnd, "TEST", 10, 10, 200, 100, 1);
 #ifdef _DEBUG
 	EnableDebugLayer();
 #endif
@@ -262,7 +271,15 @@ bool Application::Init() {
 
 // Run
 void Application::Run() {
-	ShowWindow(_hwnd, SW_SHOW);
+	//ShowWindow(_hwnd, SW_SHOW);
+	ShowWindow(_mainWindow->_hwnd, SW_SHOW);
+	//ShowWindow(_sourceWindow->_hwnd, SW_SHOW);
+	//ShowWindow(_modelWindow->_hwnd, SW_SHOW);
+	//ShowWindow(_detailWindow->_hwnd, SW_SHOW);
+	//searchOBJFile();
+	std::cout << "CreateSourceButton" << endl;
+	//_sourceWindow->CreateSourceButtons(_objFiles);
+	std::cout << "FinishSourceButton" << endl;
 
 	/*
 	Model model;
@@ -355,7 +372,7 @@ void Application::Run() {
 
 		if (msg.message == WM_LBUTTONDOWN) {
 #ifdef _DEBUG
-			printf("press left button");
+			//printf("press left button");
 #endif
 		}
 
@@ -479,13 +496,19 @@ void Application::Run() {
 
 // アプリの終了
 void Application::Terminate() {
-	UnregisterClass(_windowClass.lpszClassName, _windowClass.hInstance);
+	//UnregisterClass(_windowClass.lpszClassName, _windowClass.hInstance);
+	UnregisterClass(_mainWindow->_windowClass.lpszClassName, _mainWindow->_windowClass.hInstance);
 }
 
 // Applicationインスタンスの生成
-Application& Application::Instance() {
+Application& Application::Instance(HINSTANCE hi) {
 	static Application instance;
+	instance._hInstance = hi;
 	return instance;
+}
+
+HINSTANCE Application::GetHINSTANCE() {
+	return _hInstance;
 }
 
 Application::~Application() {
@@ -1400,5 +1423,55 @@ void Application::CreatePath() {
 		_modelPath = folderPath + "\\snyEngine\\model";
 	}
 	cout << "modelPath:   " << _modelPathD << endl;
+	return;
+}
+
+void Application::searchOBJFile() {
+	CreatePath();
+	_objFiles.clear();
+
+	WIN32_FIND_DATA findFileData;
+	string searchFile = _modelPathD + "\\*.obj";
+	cout << "OBJファイルを検索します。パス：" << _modelPathD << endl;
+	HANDLE hFind = FindFirstFile(searchFile.c_str(), &findFileData);
+
+	if (hFind == INVALID_HANDLE_VALUE) {
+		cout << "OBJファイルが見つかりませんでした。" << endl;
+		return;
+	}
+
+	do {
+		string fileName = findFileData.cFileName;
+		size_t dotPos = fileName.find_last_of(".");
+
+		if (dotPos != string::npos) {
+			string nameWithoutExt = fileName.substr(0, dotPos);
+			_objFiles.insert(make_pair(nameWithoutExt, false));
+			cout << "OBJファイルを見つけました：" << fileName << endl;
+		}
+	} while (FindNextFile(hFind, &findFileData) != 0);
+
+	cout << "mtl" << endl;
+	searchFile = _modelPathD + "\\*.mtl";
+	hFind = FindFirstFile(searchFile.c_str(), &findFileData);
+
+	if (hFind == INVALID_HANDLE_VALUE) {
+		cout << "MTLファイルが見つかりませんでした。" << endl;
+		return;
+	}
+	do {
+		string fileName = findFileData.cFileName;
+		size_t dotPos = fileName.find_last_of(".");
+
+		if (dotPos != string::npos) {
+			string nameWithoutExt = fileName.substr(0, dotPos);
+			auto it = _objFiles.find(nameWithoutExt);
+			if (it != _objFiles.end()) {
+				cout << it->first << "のMTLファイルを見つけました。" << endl;
+				it->second = true;
+			}
+		}
+	} while (FindNextFile(hFind, &findFileData) != 0);
+	
 	return;
 }

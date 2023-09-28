@@ -22,6 +22,9 @@ using namespace DirectX;
 
 class SubModel {
 private:
+	string _materialName = "";
+	Transform _transform;
+
 	vector<Vertex> _vertices;
 	Microsoft::WRL::ComPtr<ID3D12Resource> _vertexBuffer = nullptr;
 	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView = {};
@@ -41,5 +44,9 @@ public:
 
 	bool CreateIndexBuffer();
 
+	void Draw();
 
+	SubModel();
+
+	~SubModel();
 };
